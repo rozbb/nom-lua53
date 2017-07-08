@@ -6,6 +6,7 @@ use nom::{self, IResult};
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct VarName<'a>(pub &'a [u8]);
 
+// Print varnames as utf8 strings. After all, they are required to be ASCII
 impl<'a> fmt::Debug for VarName<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         let s = String::from_utf8_lossy(self.0);
@@ -15,7 +16,13 @@ impl<'a> fmt::Debug for VarName<'a> {
 
 named!(pub namelist<Vec<VarName>>, separated_nonempty_list_complete!(lua_tag!(","), varname));
 
-named!(pub label<VarName>, ws!(delimited!(tag!("::"), varname, tag!("::"))));
+named!(pub label<VarName>, eat_lua_sep!(
+    delimited!(lua_tag!("::"), varname, lua_tag!("::"))
+));
+
+named!(pub goto<VarName>, eat_lua_sep!(
+    preceded!(lua_tag!("goto"), varname)
+));
 
 named!(reserved, alt!(
     tag!("and") | tag!("break") | tag!("do") | tag!("else") | tag!("elseif") | tag!("end") |
@@ -45,38 +52,3 @@ fn varname_(buf: &[u8]) -> IResult<&[u8], VarName> {
 }
 
 named!(pub varname<VarName>, eat_lua_sep!(call!(varname_)));
-
-#[cfg(test)]
-mod test {
-    use super::{label, varname, VarName};
-    use utils::test_utils::EMPTY;
-
-    use nom::{self, IResult};
-
-    #[test]
-    fn test_label() {
-        assert_eq!(label(b"::   Hello   ::"), IResult::Done(EMPTY, VarName(b"Hello")));
-        assert!(label(b"::H ello::").is_err());
-    }
-
-    #[test]
-    fn test_varname() {
-        let good_names = ["Hello", "He_llo", "_H2ello", "nothello"];
-        let bad_names = ["4ello", "and", "H&ello", "-World", "F--oo"];
-        let bad_output = vec![
-            IResult::Error(nom::ErrorKind::Alt),
-            IResult::Error(nom::ErrorKind::Custom(0)),
-            IResult::Done(&b"&ello"[..], VarName(b"H")),
-            IResult::Error(nom::ErrorKind::Alt),
-            IResult::Done(&b"--oo"[..], VarName(b"F")),
-        ];
-
-        for name in &good_names {
-            let name = name.as_bytes();
-            assert_eq!(varname(name), IResult::Done(EMPTY, VarName(name)));
-        }
-        for (name, expected) in bad_names.iter().zip(bad_output.into_iter()) {
-            assert_eq!(varname(name.as_bytes()), expected);
-        }
-    }
-}

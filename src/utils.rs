@@ -1,4 +1,5 @@
 use nom::{alpha, is_alphanumeric};
+use comment::comment;
 
 pub fn is_alphanum_or_underscore(c: u8) -> bool {
     is_alphanumeric(c) || c == b'_'
@@ -34,16 +35,10 @@ macro_rules! lua_tag {
 // Eats a preceding lua separator, i.e., whitespace and/or a comment till the end of the line
 macro_rules! eat_lua_sep {
     ($i:expr, $submac:ident!( $($args:tt)* )) => ({
-        use comment::comment;
-        use utils::is_ws;
+        use utils::lua_sep;
         complete!(
             $i,
-            preceded!(
-                recognize_many0!(
-                    alt!(take_while1!(is_ws) | comment)
-                ),
-                $submac!($($args)*)
-            )
+            preceded!(lua_sep, $submac!($($args)*))
         )
     });
 }
@@ -138,6 +133,13 @@ macro_rules! recognize_many0 {
     many0!($i, call!($f));
   );
 }
+
+named!(pub lua_sep,
+    recognize_many0!(
+        alt!(take_while1!(is_ws) | comment)
+    )
+);
+
 
 #[cfg(test)]
 pub mod test_utils {

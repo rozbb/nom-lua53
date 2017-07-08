@@ -79,6 +79,7 @@ fn parse_hex_lit(neg: Option<&[u8]>,
     // This is a regular integer
     else {
         // Stil truncate to 30 digits
+        // TODO: Figure out the actual behavior here
         let truncated = str::from_utf8(truncate(whole_part, 30)).unwrap();
         let full_num = isize::from_str_radix(truncated, 16).unwrap();
 

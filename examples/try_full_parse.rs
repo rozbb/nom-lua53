@@ -8,7 +8,8 @@ fn main() {
     let mut input = Vec::new();
     io::stdin().read_to_end(&mut input).expect("couldn't read from stdin");
     match parse_all(&*input) {
-        IResult::Done(rest, _) => println!("Done. Rest == '{}'", String::from_utf8_lossy(rest)),
-        e @ _ => println!("Error: {:?}", e),
+        ParseResult::Done(ss) => println!("Done"),
+        ParseResult::Error(rest, _) =>
+            println!("Error. rest == '{}'", String::from_utf8_lossy(rest)),
     }
 }
