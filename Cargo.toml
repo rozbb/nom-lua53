@@ -1,6 +1,6 @@
 [package]
 name = "nom-lua53"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Michael Rosenberg <42micro@gmail.com>"]
 description = "A toy parser for Lua 5.3 written using nom"
 
