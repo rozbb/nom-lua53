@@ -1,4 +1,5 @@
-#[allow(dead_code)]
+// TODO: Wayy more docs
+
 #[macro_use]
 extern crate nom;
 
@@ -14,6 +15,7 @@ mod stat_expr_types;
 mod string;
 
 pub use stat_expr_types::*;
+pub use num::{LuaFloat, LuaFloatT};
 
 #[cfg(test)]
 mod test;

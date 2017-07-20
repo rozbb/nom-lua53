@@ -8,7 +8,7 @@ use std::fmt;
 use nom::IResult;
 
 #[derive(Clone, Eq, PartialEq)]
-pub struct StringLit<'a>(Cow<'a, [u8]>);
+pub struct StringLit<'a>(pub Cow<'a, [u8]>);
 
 impl<'a> fmt::Debug for StringLit<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
@@ -88,7 +88,7 @@ fn extend_lit(mut v: Vec<u8>, r: Result<StringLit, String>) -> Result<StringLit,
 
 // TODO: String building could be more efficient
 // TODO: map_res never actually looks at the String error message
-fn unescape(buf: &[u8]) -> Result<StringLit, String> {
+pub fn unescape(buf: &[u8]) -> Result<StringLit, String> {
     if buf.len() == 0 {
         return Ok(StringLit(Cow::from(&b""[..])));
     }
@@ -180,7 +180,7 @@ fn unescape(buf: &[u8]) -> Result<StringLit, String> {
     }
 }
 
-fn raw_str(buf: &[u8]) -> IResult<&[u8], StringLit> {
+pub fn raw_str(buf: &[u8]) -> IResult<&[u8], StringLit> {
     match utils::open_long_bracket(buf) {
         IResult::Done(buf, depth) => {
             let end_bracket = utils::new_end_long_bracket(depth);
@@ -188,43 +188,5 @@ fn raw_str(buf: &[u8]) -> IResult<&[u8], StringLit> {
         }
         IResult::Error(a) => IResult::Error(a),
         IResult::Incomplete(a) => IResult::Incomplete(a),
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use utils::test_utils::EMPTY;
-
-    use std::borrow::Cow;
-    use nom::IResult;
-
-    #[test]
-    fn test_unescape() {
-        let inputs = [r"he\u{320}\u{320}llo",
-                      r"\thello\z
-                        \'world"];
-        let outputs = vec!["he̠̠llo", "\thello'world"]
-           .into_iter().map(str::as_bytes).map(Cow::from).collect::<Vec<_>>();
-
-        for (input, expected) in inputs.iter().zip(outputs.into_iter()) {
-            assert_eq!(unescape(input.as_bytes()), Ok(StringLit(expected)));
-        }
-    }
-
-    #[test]
-    fn test_long_str() {
-        let good_inputs = [
-            r"[=====[ hello\nworld\'''hi\z    there]=====]",
-            r"[=[foo ' bar \t [=[ baz]=]",
-        ];
-        let good_outputs = vec![
-            r" hello\nworld\'''hi\z    there",
-            r"foo ' bar \t [=[ baz",
-        ].into_iter().map(str::as_bytes).map(Cow::from).collect::<Vec<_>>();
-
-        for (input, expected) in good_inputs.iter().zip(good_outputs.into_iter()) {
-            assert_eq!(raw_str(input.as_bytes()), IResult::Done(EMPTY, StringLit(expected)));
-        }
     }
 }

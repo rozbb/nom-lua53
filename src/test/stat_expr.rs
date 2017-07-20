@@ -1,8 +1,9 @@
-extern crate nom_lua53;
-
 use name::VarName;
-use stat_expr::{funcname, parlist};
+use stat_expr::*;
+use stat_expr_types::*;
 use utils::test_utils::EMPTY;
+
+use nom::IResult;
 
 fn varname_vec(varnames: &[&'static str]) -> Vec<VarName<'static>> {
     varnames.iter().map(|n| VarName(n.as_bytes())).collect()

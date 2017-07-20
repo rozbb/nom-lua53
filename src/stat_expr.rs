@@ -157,7 +157,7 @@ named!(functiondef<FunctionDef>, eat_lua_sep!(
     )
 ));
 
-named!(funcname<FunctionName>, eat_lua_sep!(
+named!(pub funcname<FunctionName>, eat_lua_sep!(
        do_parse!(
            path: separated_nonempty_list_complete!(lua_tag!("."), varname) >>
            method: opt!(complete!(preceded!(lua_tag!(":"), varname))) >>
@@ -313,7 +313,7 @@ named!(field<Field>, eat_lua_sep!(
 ));
 
 // Either we get a ... or nothing, or some parameters which can be followed by ',...'
-named!(parlist<Params>, eat_lua_sep!(
+named!(pub parlist<Params>, eat_lua_sep!(
     alt!(
         do_parse!(
             names: namelist >>
