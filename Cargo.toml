@@ -6,6 +6,7 @@ description = "A toy parser for Lua 5.3 written using nom"
 
 [dependencies]
 nom = "3.1"
+libc = "0.2"
 
 [features]
 single_float = []

@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate nom;
+extern crate libc;
 
 #[macro_use]
 mod utils;
@@ -15,7 +16,7 @@ mod stat_expr_types;
 mod string;
 
 pub use stat_expr_types::*;
-pub use num::{LuaFloat, LuaFloatT};
+pub use num::LuaFloat;
 
 #[cfg(test)]
 mod test;

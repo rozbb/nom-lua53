@@ -8,20 +8,21 @@ fn test_numlit() {
     let good_outputs = vec![
         Numeral::Int(13),
         Numeral::Int(0xf5),
-        Numeral::Float(LuaFloat(533.46875)),
-        Numeral::Float(LuaFloat(50481546.87890625)),
-        Numeral::Float(LuaFloat(2.71828)),
+        Numeral::Float(533.46875),
+        Numeral::Float(50481546.87890625),
+        Numeral::Float(2.71828),
     ];
     // We won't be matching the entirety of the input
     let bad_outputs = vec![
         IResult::Error(nom::ErrorKind::Alt),
         IResult::Done(&b"f5"[..], Numeral::Int(13)),
-        IResult::Done(&b".1.4"[..], Numeral::Float(LuaFloat(10.3))),
+        IResult::Done(&b".1.4"[..], Numeral::Float(10.3)),
         IResult::Done(&b"xp1"[..], Numeral::Int(0)),
         IResult::Done(&b"e"[..], Numeral::Int(50)),
     ];
 
     for (input, expected) in good_inputs.iter().zip(good_outputs.into_iter()) {
+        println!("trying {:?}", input);
         assert_eq!(num_lit(input.as_bytes()), IResult::Done(&b""[..], expected));
     }
 
