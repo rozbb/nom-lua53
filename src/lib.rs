@@ -24,19 +24,17 @@ pub use num::LuaFloat;
 #[cfg(test)]
 mod test;
 
-use stat_expr::statement;
-use stat_expr_types::Statement;
+use stat_expr::block;
+use stat_expr_types::Block;
 use utils::lua_sep;
 use nom::IResult;
 
 pub enum ParseResult<'a> {
-    Done(Vec<Statement<'a>>),
-    Error(&'a [u8], Vec<Statement<'a>>),
+    Done(Block<'a>),
+    Error(&'a [u8], Block<'a>),
 }
 
-named!(parse_all_<Vec<Statement>>,
-    delimited!(lua_sep, many0!(statement), lua_sep)
-);
+named!(parse_all_<Block>, terminated!(block, lua_sep));
 
 pub fn parse_all(input: &[u8]) -> ParseResult {
     match parse_all_(input) {

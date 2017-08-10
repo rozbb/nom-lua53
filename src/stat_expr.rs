@@ -39,7 +39,7 @@ named!(exp2<Exp2>, eat_lua_sep!(
     )
 ));
 
-named!(pub statement<Statement>, eat_lua_sep!(
+named!(statement<Statement>, eat_lua_sep!(
     alt!(
         value!(Statement::Semicolon, lua_tag!(";")) |
         value!(Statement::Break, lua_tag!("break")) |
@@ -204,7 +204,7 @@ named!(functionbody<FunctionBody>, eat_lua_sep!(
     )
 ));
 
-named!(block<Block>, eat_lua_sep!(
+named!(pub block<Block>, eat_lua_sep!(
     do_parse!(
         stmts: many0!(statement) >>
         ret_stmt: opt!(complete!(ret_statement)) >>
