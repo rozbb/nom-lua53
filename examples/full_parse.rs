@@ -9,10 +9,10 @@ fn main() {
     io::stdin().read_to_end(&mut input).expect("couldn't read from stdin");
     match parse_all(&*input) {
         ParseResult::Done(ss) => {
-            println!("Done. statements == {:#?}", ss);
+            println!("Done. {:#?}", ss);
         }
         ParseResult::Error(rest, ss) => {
-            println!("Error. statements == {:#?}", ss);
+            println!("Error. {:#?}", ss);
             println!("rest == '{}'", String::from_utf8_lossy(rest));
         }
     }

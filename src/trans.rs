@@ -131,7 +131,10 @@ impl<'a> From<FlatExp<'a>> for Exp<'a> {
                                     &OpOrExp::Op(UnOrBinOp::BinOp(_)) => {
                                         panic!("encountered two binops next to each other");
                                     },
-                                    &OpOrExp::Exp(_) => tojoin_idx = Some(i),
+                                    &OpOrExp::Exp(_) => {
+                                        tojoin_idx = Some(i);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -165,7 +168,9 @@ impl<'a> From<FlatExp<'a>> for Exp<'a> {
                                 assert!(i.checked_add(1).is_some());
                                 let next = explist.get(i+1).unwrap();
                                 assert!(next.is_exp());
+
                                 tojoin_idx = Some(i);
+                                break;
                             }
                         }
                         _ => unreachable!(),
