@@ -15,9 +15,13 @@ use op::{BinOp, UnOp};
 //   unary operators (not   #     -     ~)
 //   ^
 
-const UNOPS: &'static [UnOp] = &[UnOp::Minus, UnOp::BoolNot, UnOp::Length, UnOp::BitNot];
-
 lazy_static! {
+    static ref UNOPS: Vec<UnOp> = {
+        let table = &mut [UnOp::Minus, UnOp::BoolNot, UnOp::Length, UnOp::BitNot];
+        table.sort();
+        table.to_vec()
+    };
+
     static ref BINOP_PRECEDENCE: Vec<Vec<BinOp>> = {
         let table: &mut [&mut [BinOp]] = &mut [
             &mut [BinOp::Pow],
@@ -204,7 +208,7 @@ impl<'a> From<FlatExp<'a>> for Exp<'a> {
         // First pass: find all triplets of the form a $ b where a and b are Exps and $ is a binop
         // of the highest precedence
         merge_all_binops(&mut explist, &*BINOP_PRECEDENCE[0]);
-        merge_all_unops(&mut explist, UNOPS);
+        merge_all_unops(&mut explist, &*UNOPS);
 
         for binops in BINOP_PRECEDENCE.iter() {
             merge_all_binops(&mut explist, &*binops);
@@ -230,7 +234,6 @@ impl<'a> From<Exp2<'a>> for Exp<'a> {
             Exp2::FuncCall(f) => Exp::FuncCall(f),
             Exp2::PrefixExp(p) => Exp::PrefixExp(p),
             Exp2::Table(t) => Exp::Table(t),
-            Exp2::UnExp(o, e) => Exp::UnExp(o, Box::new(Exp::from(*e))),
         }
     }
 }

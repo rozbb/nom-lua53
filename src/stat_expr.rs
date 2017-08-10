@@ -34,8 +34,7 @@ named!(exp2<Exp2>, eat_lua_sep!(
         map!(string_lit, Exp2::Str) |
         map!(lambdadef, Exp2::Lambda) |
         map!(prefixexp, |e| Exp2::PrefixExp(Box::new(e))) |
-        map!(table_lit, Exp2::Table) |
-        map!(tuple!(unop, exp2), |(o, e)| Exp2::UnExp(o, Box::new(e)))
+        map!(table_lit, Exp2::Table)
     )
 ));
 

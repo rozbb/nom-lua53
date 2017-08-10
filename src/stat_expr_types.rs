@@ -67,7 +67,6 @@ pub enum Exp2<'a> {
     FuncCall(FunctionCall<'a>),
     PrefixExp(Box<PrefixExp<'a>>),
     Table(TableLit<'a>),
-    UnExp(UnOp, Box<Exp2<'a>>),
 }
 
 // while <cond> do <block>
