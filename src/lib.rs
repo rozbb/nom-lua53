@@ -10,16 +10,15 @@ extern crate libc;
 mod utils;
 
 mod comment;
-mod name;
-mod num;
-mod op;
+pub mod name;
+pub mod num;
+pub mod op;
 mod stat_expr;
-mod stat_expr_types;
-mod string;
+pub mod stat_expr_types;
+pub mod string;
 mod trans;
 
 pub use stat_expr_types::*;
-pub use num::LuaFloat;
 
 #[cfg(test)]
 mod test;
