@@ -26,12 +26,35 @@ pub enum Statement<'a> {
     LVarAssign(LAssignment<'a>), // Local variable assignment
 }
 
-// binops.len() == binop_operands.len() - 1. Each binop belongs in between two operands, in order
 #[derive(Clone, Debug, PartialEq)]
-pub struct Exp<'a> {
-    pub binop_operands: Vec<Exp2<'a>>,
-    pub binops: Vec<BinOp>,
+pub enum Exp<'a> {
+    Nil,
+    Ellipses,
+    Bool(bool),
+    Num(Numeral),
+    Str(StringLit<'a>),
+    Lambda(FunctionBody<'a>),
+    FuncCall(FunctionCall<'a>),
+    PrefixExp(Box<PrefixExp<'a>>),
+    Table(TableLit<'a>),
+    UnExp(UnOp, Box<Exp<'a>>),
+    BinExp(Box<Exp<'a>>, BinOp, Box<Exp<'a>>),
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum OpOrExp2<'a> {
+    Op(UnOrBinOp),
+    Exp2(Exp2<'a>),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum UnOrBinOp {
+    UnOp(UnOp),
+    BinOp(BinOp),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct FlatExp<'a>(pub Vec<OpOrExp2<'a>>);
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Exp2<'a> {
@@ -138,7 +161,7 @@ pub enum Args<'a> {
 pub struct PrefixExp<'a> {
     pub prefix: ExpOrVarName<'a>,
     // TODO: Fix naming conventions here
-    pub arg_chain: Vec<PrefixedArg<'a>>,
+    pub suffix_chain: Vec<ExpSuffix<'a>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -149,7 +172,7 @@ pub enum ExpOrVarName<'a> {
 
 // TODO: Fix naming conventions here
 #[derive(Clone, Debug, PartialEq)]
-pub enum PrefixedArg<'a> {
+pub enum ExpSuffix<'a> {
     TableDot(VarName<'a>),
     TableIdx(Exp<'a>),
     FuncCall(FunctionCall<'a>)
@@ -167,4 +190,3 @@ pub enum Field<'a> {
     ExpAssign(Exp<'a>, Exp<'a>), // Assigning by expr, e.g {["foo" .. "bar"] = 10}
     PosAssign(Exp<'a>), // Assigning by position, e.g {"foo", "bar"} assigns in positions 1 and 2
 }
-

@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum BinOp {
     Plus, Minus, Mul, Div, IntDiv, Pow, Mod,
     Concat,
@@ -7,7 +7,7 @@ pub enum BinOp {
     BitAnd, BitXor, BitOr, BitShl, BitShr,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum UnOp {
     Minus,
     BoolNot,

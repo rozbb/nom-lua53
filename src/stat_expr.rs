@@ -1,34 +1,28 @@
 use name::{goto, label, namelist, varname};
 use num::num_lit;
-use op::{binop, unop, BinOp};
+use op::{binop, unop, UnOp};
 use stat_expr_types::*;
 use string::string_lit;
+use trans;
 
 use nom::{self, IResult};
 
-// TODO: bad naming
-fn exp_from_head_and_binop_chain<'a>(head: Exp2<'a>, binop_chain: Vec<(BinOp, Exp2<'a>)>) -> Exp<'a> {
-    // Separate the expressions from the binops
-    let (binop_operands, binops) = binop_chain.into_iter().fold((vec![head], Vec::new()),
-        |(mut exprs, mut ops), (o, e)| {
-            ops.push(o);
-            exprs.push(e);
-            (exprs, ops)
-    });
+named!(unopexp2<(Vec<UnOp>, Exp2)>, eat_lua_sep!(
+    tuple!(
+        many0!(unop),
+        exp2
+    )
+));
 
-    Exp {
-        binop_operands,
-        binops,
-    }
-}
-
-named!(pub exp<Exp>, eat_lua_sep!(
+named!(flatexp<FlatExp>, eat_lua_sep!(
     do_parse!(
-        head: exp2 >>
-        binop_chain: many0!(tuple!(binop, exp2)) >>
-        (exp_from_head_and_binop_chain(head, binop_chain))
+        head: unopexp2 >>
+        binop_chain: many0!(tuple!(binop, unopexp2)) >>
+        (trans::flatexp_from_components(head, binop_chain))
     ))
 );
+
+named!(pub exp<Exp>, map!(flatexp, Exp::from));
 
 named!(exp2<Exp2>, eat_lua_sep!(
     alt!(
@@ -225,8 +219,8 @@ named!(ret_statement<Vec<Exp>>, eat_lua_sep!(
 named!(prefixexp<PrefixExp>, eat_lua_sep!(
     do_parse!(
         prefix: prefixexp2 >>
-        arg_chain: many0!(prefixexp3) >>
-        (PrefixExp { prefix, arg_chain })
+        suffix_chain: many0!(prefixexp3) >>
+        (PrefixExp { prefix, suffix_chain })
     )
 ));
 
@@ -237,14 +231,14 @@ named!(prefixexp2<ExpOrVarName>, eat_lua_sep!(
     )
 ));
 
-named!(prefixexp3<PrefixedArg>, eat_lua_sep!(
+named!(prefixexp3<ExpSuffix>, eat_lua_sep!(
     alt!(
-        map!(preceded!(lua_tag!("."), varname), PrefixedArg::TableDot) |
-        map!(delimited!(lua_tag!("["), exp, lua_tag!("]")), PrefixedArg::TableIdx) |
+        map!(preceded!(lua_tag!("."), varname), ExpSuffix::TableDot) |
+        map!(delimited!(lua_tag!("["), exp, lua_tag!("]")), ExpSuffix::TableIdx) |
         do_parse!(
             method: opt!(complete!(preceded!(lua_tag!(":"), varname))) >>
             args: args >>
-            (PrefixedArg::FuncCall(FunctionCall { method, args }))
+            (ExpSuffix::FuncCall(FunctionCall { method, args }))
         )
     )
 ));
@@ -254,9 +248,9 @@ fn functioncall(input: &[u8]) -> IResult<&[u8], PrefixExp> {
     let res = prefixexp(input);
     // TODO: de-uglify
     let is_funccall = match res {
-        IResult::Done(_, ref pe) => match pe.arg_chain.last() {
+        IResult::Done(_, ref pe) => match pe.suffix_chain.last() {
             Some(ref a) => match a {
-                &&PrefixedArg::FuncCall(_) => true,
+                &&ExpSuffix::FuncCall(_) => true,
                 _ => false,
             },
             _ => false,
